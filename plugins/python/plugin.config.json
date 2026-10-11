@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "python",
+  "version": "0.1.0",
+  "description": "Develop maintainable Python code with strict typing, documentation, and meaningful tests.",
+  "keywords": ["python", "uv", "mypy", "ruff", "testing"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Python",
+        "shortDescription": "Write clear, typed Python code with focused tests."
+      }
+    }
+  }
+}

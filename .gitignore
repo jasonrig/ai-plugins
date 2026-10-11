@@ -5,3 +5,4 @@ tools/codex-schema/target/
 dist/
 test-results/
 .DS_Store
+__pycache__/

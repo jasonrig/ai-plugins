@@ -1,0 +1,17 @@
+{
+  "name": "python",
+  "version": "0.1.0",
+  "description": "Develop maintainable Python code with strict typing, documentation, and meaningful tests.",
+  "keywords": [
+    "python",
+    "uv",
+    "mypy",
+    "ruff",
+    "testing"
+  ],
+  "skills": "./skills",
+  "interface": {
+    "displayName": "Python",
+    "shortDescription": "Write clear, typed Python code with focused tests."
+  }
+}

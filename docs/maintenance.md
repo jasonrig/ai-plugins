@@ -130,6 +130,59 @@ Regenerate schemas after any extractor dependency change. Provenance records
 `Cargo.toml` and `Cargo.lock`; a dependency-only PR fails until its new provenance
 is committed. Run the Rust checks below and review the generated diff as well.
 
+## Python skill dependencies and tests
+
+The IntelliJ skill's `scripts/requirements.in` declares TOML Kit. Its
+`requirements.txt` locks the package and distribution hashes. Verify the current
+release and let uv resolve and write the update:
+
+```sh
+python3 -m pip index versions tomlkit
+uv pip compile --upgrade --generate-hashes --python-version 3.11 \
+  --cache-dir .cache/uv \
+  --output-file plugins/intellij/skills/register-intellij-mcp/scripts/requirements.txt \
+  plugins/intellij/skills/register-intellij-mcp/scripts/requirements.in
+npm run test:python
+```
+
+Do not edit the locked version or hashes by hand. Dependabot checks these
+requirements weekly. If you remove the IntelliJ plugin, also remove its pip
+entry from `.github/dependabot.yml`.
+
+`test:python` discovers test directories under `plugins/*/skills/*/tests` and
+runs each with its own locked dependencies using uv. A suite-local
+`tests/requirements.txt` takes precedence; otherwise the runner uses the skill's
+`scripts/requirements.txt`. It needs Python 3.11 or newer and uv. A marketplace
+with no Python test suites has no Python tests to run;
+the independent marketplace fixtures still run through the other test commands.
+
+The IntelliJ tests check preserved settings and comments, backups, repeated runs,
+dry-run behavior, invalid inputs, and failures before replacement. An isolated
+Codex home also checks that the CLI reads different ports and project headers
+from two project configs. Tests do not edit the user's config or contact an IDE.
+
+The Python Development skill ships a quality configuration template. Its tests
+run the real mypy, Ruff, and pytest tools against valid code and deliberate
+violations. Representative fixtures cover built-in types, a checker plugin, and
+external stubs. They also confirm the limits assigned to review, including broad
+`object` annotations and field documentation. Mypy probes disable incremental
+caching so successive examples cannot reuse stale results. The fixtures do not
+turn the skill into a maintained catalogue of framework integrations.
+
+Its test tools and fixture dependencies are declared in `tests/requirements.in`.
+Verify their latest registry releases, then regenerate the lock with uv:
+
+```sh
+uv pip compile --upgrade --generate-hashes --python-version 3.11 \
+  --cache-dir .cache/uv \
+  --output-file plugins/python/skills/python-development/tests/requirements.txt \
+  plugins/python/skills/python-development/tests/requirements.in
+npm run test:python
+```
+
+Do not hand-edit the lock. Dependabot checks this test environment separately.
+If you remove the Python plugin, also remove its pip entry from Dependabot.
+
 ## TypeScript documentation rules
 
 Use TSDoc-style `/** ... */` comments for module constants, named functions,
@@ -187,14 +240,15 @@ uses a different version.
 
 ## What CI checks
 
-| Check                      | Failure conditions                                                                                                               |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Schema and semantic checks | Wrong types, unknown fields, unsupported components, bad names or versions, invalid skills, missing component paths              |
-| Plugin inventory           | A package is unlisted; a declared package is absent; names or paths are duplicated; manifest identity differs                    |
-| Generated files            | A catalog, compatibility manifest, or MCP output is missing, stale, or edited by hand                                            |
-| Source regeneration        | Source hashes differ; extraction fails; regenerated schemas or provenance differ                                                 |
-| Code quality               | TypeScript, strict Oxlint, Prettier, Rust format, Clippy, or unit tests fail                                                     |
-| Real Codex                 | Catalog names differ; install or removal fails; metadata, skills, MCP names, or hook events differ; skill parsing reports errors |
+| Check                      | Failure conditions                                                                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Schema and semantic checks | Wrong types, unknown fields, unsupported components, bad names or versions, invalid skills, missing component paths                |
+| Plugin inventory           | A package is unlisted; a declared package is absent; names or paths are duplicated; manifest identity differs                      |
+| Generated files            | A catalog, compatibility manifest, or MCP output is missing, stale, or edited by hand                                              |
+| Source regeneration        | Source hashes differ; extraction fails; regenerated schemas or provenance differ                                                   |
+| Code quality               | TypeScript, strict Oxlint, Prettier, Rust format, Clippy, or unit tests fail                                                       |
+| Real Codex                 | Catalog names differ; install or removal fails; metadata, skills, MCP names, or hook events differ; skill parsing reports errors   |
+| Python skills              | Helper behavior fails; Codex reads incorrect project settings; quality presets accept intended violations or reject valid examples |
 
 Unit tests copy the private marketplace under `test/fixtures/marketplace` into
 temporary directories. They do not depend on a plugin or catalog entry in the
@@ -215,6 +269,8 @@ The three jobs in `Validate marketplace` run on each push and pull request. GitH
 Actions have fixed commit pins and read-only repository permissions. Enable all
 three jobs as required branch checks if you want GitHub to block merges on failure.
 `Latest Codex compatibility` runs weekly and can also run manually.
+The Codex integration job also runs `npm run test:python` in an isolated Python
+environment.
 
 ## References
 

@@ -59,3 +59,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:codex
+      - name: Prepare isolated Python tools
+        run: |
+          python3 -m venv .cache/python-tools
+          .cache/python-tools/bin/python -m pip install --upgrade uv
+          echo "${{ github.workspace }}/.cache/python-tools/bin" >> "$GITHUB_PATH"
+      - run: npm run test:python

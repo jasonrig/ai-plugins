@@ -11,7 +11,15 @@ updates:
     directory: /tools/codex-schema
     schedule:
       interval: weekly
+  - package-ecosystem: pip
+    directory: /plugins/intellij/skills/register-intellij-mcp/scripts
+    schedule:
+      interval: weekly
   - package-ecosystem: github-actions
     directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: /plugins/python/skills/python-development/tests
     schedule:
       interval: weekly

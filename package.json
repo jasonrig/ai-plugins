@@ -19,7 +19,8 @@
     "plugin:new": "node --import tsx src/cli.ts new",
     "test": "node --import tsx --test test/*.test.ts",
     "test:codex": "node --import tsx src/integration.ts",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run validate && npm run generate:check"
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run validate && npm run generate:check",
+    "test:python": "python3 tools/test_plugin_scripts.py"
   },
   "dependencies": {
     "ajv": "8.20.0",

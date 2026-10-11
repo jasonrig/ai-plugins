@@ -55,6 +55,7 @@ npm run generate
 npm run format
 npm run check
 npm run test:codex
+npm run test:python
 ```
 
 Review and commit the authored files and generated files, then push to GitHub.
@@ -72,6 +73,10 @@ It also uses separate test packages to check skills, MCP settings, and hooks.
 These tests need no account login or API key. Test each skill's behavior, MCP
 connection, and hook command separately before you rely on it.
 
+`test:python` runs the Python tests included with published skills. It
+needs Python **3.11 or newer** and [uv](https://docs.astral.sh/uv/getting-started/installation/).
+It installs each suite's locked dependencies in an isolated environment.
+
 ## Curate the catalog
 
 Edit `marketplace.config.json` to change the marketplace identity, plugin category,
@@ -84,8 +89,14 @@ directory, `plugin.config.json`, and catalog entry together.
 
 ## Use the marketplace in Codex
 
-These commands assume that Codex is installed and available as `codex`. Register
-the GitHub repository:
+In the Codex App, open this repository as a local project and restart the App.
+Open the Plugins Directory, select **Personal plugins**, and install the plugin
+you want. The App reads the generated `.agents/plugins/marketplace.json` in this
+repository. See [OpenAI's marketplace guide](https://developers.openai.com/plugins/build/plugins#build-your-own-curated-plugin-list)
+for the App workflow.
+
+For CLI users, the following commands assume that Codex is installed and available
+as `codex`. Register the GitHub repository:
 
 ```sh
 codex plugin marketplace add https://github.com/jasonrig/ai-plugins.git
@@ -111,6 +122,74 @@ its new name instead of `personal-plugins`. To remove an installed copy, run:
 ```sh
 codex plugin remove my-plugin@personal-plugins
 ```
+
+## IntelliJ plugin
+
+The `intellij` plugin provides a skill to register IntelliJ IDEA's MCP server in
+the current project's `.codex/config.toml`. Install **IntelliJ** from **Personal
+plugins** in the Codex App's Plugins Directory.
+
+After installation, open a chat in the project you want to connect and ask:
+"Use the IntelliJ plugin to register its MCP server for this project." The skill
+uses the IDE's Streamable HTTP URL and the project's absolute path. Restart the
+App after setup, then open a new chat in the same project to verify the connection.
+Each project has its own settings. Installing the plugin does not configure the
+connection, and the setup skill does not require the CLI.
+
+The skill uses a Python helper with TOML Kit to preserve existing settings,
+comments, and layout. It previews the edit, keeps a backup when updating an
+existing file, and replaces the file atomically. The Codex project directory,
+IntelliJ project path, port, and server name are separate parameters. The helper
+does not edit user-level Codex settings.
+
+For the actual port, server setup, or connection problems, see
+[JetBrains' MCP Server documentation](https://www.jetbrains.com/help/idea/mcp-server.html).
+
+### Keep local connection settings out of commits
+
+The IntelliJ port and absolute project path depend on your machine and checkout.
+For an untracked local config, add these rules to `.gitignore` in the target
+project directory:
+
+```gitignore
+/.codex/config.toml
+/.codex/config.toml.*.bak
+```
+
+Codex still reads the ignored file in a trusted project. Use the repository's
+`info/exclude` file for a personal rule that you do not want
+to share. Keep the patterns specific so other `.codex/` files can still be
+committed. **If the config is already tracked, ignore rules have no effect.**
+Git also cannot ignore just its IntelliJ fields. Agree on a local config and
+tracked template policy before changing what the repository tracks. See
+[GitHub's ignore guidance](https://docs.github.com/en/get-started/git-basics/ignoring-files)
+and the skill's [version control guidance](plugins/intellij/skills/register-intellij-mcp/references/version-control.md)
+for checks and options. These rules are our recommendation for this local
+connection; [OpenAI's project configuration documentation](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml)
+explains how project settings are loaded.
+
+## Python plugin
+
+The `python` plugin provides the **Python Development** skill for implementing
+and maintaining Python code. It uses strict mypy and Ruff checks, useful public
+docstrings, and tests focused on observable behavior. It checks the project's
+actual libraries for any required typing integrations.
+
+Install **Python** from **Personal plugins** in the Codex App's Plugins Directory.
+In a project chat, ask: "Use $python-development to implement this change with
+strict typing and focused tests." For a quality setup, ask: "Use
+$python-development to review this project's checks and propose an adoption
+scope."
+
+New projects use uv with mypy, Ruff, and pytest as development dependencies.
+Existing projects keep their manager and test framework. The skill discusses
+adoption, normally starting with new and changed code. Once the project is clean,
+it can help add CI or pre-commit checks after you agree on the approach.
+
+See the [skill](plugins/python/skills/python-development/SKILL.md) and its
+[tested configuration template](plugins/python/skills/python-development/assets/pyproject-quality.toml)
+for the requirements and supported checks. Installing the plugin does not edit
+project files or install project dependencies.
 
 ## Add MCP servers and hooks
 

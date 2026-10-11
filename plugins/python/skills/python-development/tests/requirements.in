@@ -1,0 +1,8 @@
+# Tools and representative typing integrations used to verify the shipped preset.
+mypy
+ruff
+pytest
+pydantic
+requests
+types-requests
+typing-extensions

@@ -1,5 +1,20 @@
 {
   "name": "personal-plugins",
-  "interface": { "displayName": "Personal plugins" },
-  "plugins": []
+  "interface": {
+    "displayName": "Personal plugins"
+  },
+  "plugins": [
+    {
+      "name": "intellij",
+      "path": "plugins/intellij",
+      "category": "Productivity",
+      "authentication": "ON_USE"
+    },
+    {
+      "name": "python",
+      "path": "plugins/python",
+      "category": "Productivity",
+      "authentication": "ON_USE"
+    }
+  ]
 }
