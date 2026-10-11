@@ -1,6 +1,6 @@
 use quote::{ToTokens, quote};
 use std::collections::{BTreeMap, BTreeSet};
-use syn::{Attribute, Fields, Item, Type, parse_quote, visit::Visit};
+use syn::{Attribute, Expr, Fields, Item, Lit, Meta, Token, Type, parse_quote, visit::Visit};
 
 const ROOTS: &[&str] = &["RawMarketplaceManifest", "RawPluginManifest", "HooksFile"];
 const PRIMITIVES: &[&str] = &[
@@ -14,8 +14,6 @@ const PRIMITIVES: &[&str] = &[
     "bool",
     "u64",
     "usize",
-    "std",
-    "collections",
 ];
 
 fn name(item: &Item) -> Option<String> {
@@ -76,7 +74,7 @@ fn transform(mut item: Item) -> Result<Item, String> {
                 if field.ty.to_token_stream().to_string() != "JsonMap < String , JsonValue >" {
                     return Err("marketplace fallback metadata type changed".into());
                 }
-                // This repository requires package metadata in plugin.json, not catalog fallbacks.
+                // Package metadata comes from plugin.config.json, not catalog fallbacks.
                 field.attrs.push(parse_quote!(#[schemars(skip)]));
             }
         }
@@ -141,22 +139,63 @@ struct Dependencies(BTreeSet<String>);
 impl<'ast> Visit<'ast> for Dependencies {
     fn visit_type(&mut self, ty: &'ast Type) {
         if let Type::Path(path) = ty {
-            for segment in &path.path.segments {
-                self.0.insert(segment.ident.to_string());
+            let qualified = path
+                .path
+                .segments
+                .iter()
+                .map(|segment| segment.ident.to_string())
+                .collect::<Vec<_>>()
+                .join("::");
+            // These external types are supplied by the extractor's locked dependencies.
+            if !matches!(
+                qualified.as_str(),
+                "std::collections::BTreeMap" | "serde_json::Map" | "serde_json::Value"
+            ) {
+                for segment in &path.path.segments {
+                    self.0.insert(segment.ident.to_string());
+                }
             }
         }
         syn::visit::visit_type(self, ty);
     }
 }
 
+#[derive(Default)]
+struct SerdeHelpers(BTreeSet<String>);
+impl<'ast> Visit<'ast> for SerdeHelpers {
+    fn visit_attribute(&mut self, attr: &'ast Attribute) {
+        if attr.path().is_ident("serde") {
+            let arguments = attr
+                .parse_args_with(syn::punctuated::Punctuated::<Meta, Token![,]>::parse_terminated)
+                .expect("upstream serde attributes must have valid Rust syntax");
+            for argument in arguments {
+                if let Meta::NameValue(value) = argument
+                    && (value.path.is_ident("deserialize_with")
+                        || value.path.is_ident("serialize_with"))
+                    && let Expr::Lit(literal) = value.value
+                    && let Lit::Str(helper) = literal.lit
+                {
+                    self.0.insert(helper.value());
+                }
+            }
+        }
+    }
+}
+
 pub fn generate(sources: &[String]) -> Result<String, String> {
     let mut available = BTreeMap::new();
+    let mut functions = BTreeMap::new();
     for source in sources {
         for item in syn::parse_file(source)
             .map_err(|error| error.to_string())?
             .items
         {
-            if let Some(name) = name(&item)
+            if let Item::Fn(function) = &item {
+                let name = function.sig.ident.to_string();
+                if functions.insert(name.clone(), function.clone()).is_some() {
+                    return Err(format!("duplicate source function {name}"));
+                }
+            } else if let Some(name) = name(&item)
                 && available.insert(name.clone(), item).is_some()
             {
                 return Err(format!("duplicate source type {name}"));
@@ -193,9 +232,23 @@ pub fn generate(sources: &[String]) -> Result<String, String> {
         selected.insert(name, item);
     }
     let declarations = selected.values();
+    let mut helpers = SerdeHelpers::default();
+    for item in selected.values() {
+        helpers.visit_item(item);
+    }
+    let helpers = helpers
+        .0
+        .iter()
+        .map(|name| {
+            functions
+                .get(name)
+                .ok_or_else(|| format!("unresolved serde helper {name}; add its source file"))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(quote! {
         use serde_json::{Map as JsonMap, Value as JsonValue};
         #(#declarations)*
+        #(#helpers)*
     }
     .to_string())
 }
@@ -235,5 +288,41 @@ mod tests {
         let output = transform(item).unwrap().to_token_stream().to_string();
         assert!(output.contains("rename_all = \"camelCase\""));
         assert!(output.contains("rename = \"ref\""));
+    }
+
+    #[test]
+    fn resolves_qualified_json_types_and_their_nested_dependencies() {
+        let mut dependencies = Dependencies::default();
+        dependencies.visit_type(&parse_quote!(serde_json::Map<String, serde_json::Value>));
+        assert_eq!(dependencies.0, BTreeSet::from(["String".into()]));
+        dependencies.visit_type(&parse_quote!(std::collections::BTreeMap<String, Vec<Metadata>>));
+        assert!(dependencies.0.contains("Metadata"));
+        dependencies.visit_type(&parse_quote!(unknown_crate::Value));
+        assert!(dependencies.0.contains("unknown_crate"));
+    }
+
+    #[test]
+    fn retains_custom_deserialization_from_the_verified_source() {
+        let source = quote! {
+            struct RawMarketplaceManifest {}
+            struct RawPluginManifest {}
+            struct HooksFile {
+                #[serde(deserialize_with = "read_input")]
+                input: serde_json::Value,
+            }
+            fn read_input<'de, D: serde::Deserializer<'de>>(d: D) -> Result<serde_json::Value, D::Error> {
+                serde::Deserialize::deserialize(d)
+            }
+        }.to_string();
+        let output = generate(std::slice::from_ref(&source)).unwrap();
+        assert!(output.contains("deserialize_with = \"read_input\""));
+        assert!(output.contains("fn read_input"));
+        let missing_helper = source.replace("read_input", "missing_helper");
+        let missing_helper = missing_helper.split("fn missing_helper").next().unwrap();
+        assert!(
+            generate(&[missing_helper.into()])
+                .unwrap_err()
+                .contains("unresolved serde helper")
+        );
     }
 }

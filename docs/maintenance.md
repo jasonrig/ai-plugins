@@ -19,6 +19,8 @@ one from the input types in the pinned Codex source:
 The extractor compiles a small standalone crate. It does not build the Codex CLI
 or edit the upstream source. It fails if a required type or expected fallback
 changes, or a type dependency is missing. Its Cargo dependencies are locked.
+Referenced Serde deserialization helpers are copied from the verified source,
+so custom input checks are retained when the extracted types compile.
 
 Codex's input parser accepts some bad input so it can ignore it and issue a warning.
 A direct schema export would preserve those permissive fallbacks. The extractor
@@ -27,7 +29,7 @@ therefore applies three explicit rules for this repository:
 - Exclude `Unsupported(JsonValue)` and `Invalid(JsonValue)` variants **from the
   schema only**. Do not change Serde parsing.
 - Reject unknown fields in extracted structs and enums.
-- Exclude catalog fallback metadata. Put package metadata in `plugin.json`.
+- Exclude catalog fallback metadata. Put package metadata in `plugin.config.json`.
 
 These are **source-derived schemas with stricter repository rules**, not official
 OpenAI schemas or a complete description of every input the CLI will tolerate.
@@ -39,6 +41,12 @@ Generated native MCP settings also pass Codex's published configuration schema a
 the same source commit. Published files retain their original bytes. Their hashes
 and URLs are in `schemas/upstream.lock.json`. Validation never fetches a schema
 named by an authored `$schema` field.
+
+Author package metadata in `plugin.config.json`. Generate
+`.codex-plugin/plugin.json` for Codex. In Codex 0.162.1, a root `plugin.json`
+selects the Agent Plugins parser, which disables bundled hooks and expects a
+different MCP format. The inventory check rejects that file to keep Codex on the
+native manifest path and prevent components from being silently ignored.
 
 ## Regenerate or reuse the extractor
 
@@ -70,8 +78,9 @@ The lock file remains the authority for the exact extraction inputs.
 To update Codex:
 
 1. Choose a release and resolve its tag to a full commit SHA.
-2. Update `@openai/codex`, the npm lock file, and `schemas/codex-source.lock.json`.
-   Record hashes of the source files at that commit.
+2. Run `npm install --save-dev --save-exact @openai/codex@latest`. Update
+   `schemas/codex-source.lock.json` to that release and record hashes of its source
+   files at the resolved commit.
 3. Refresh the vendored Codex configuration schema and its upstream lock entry.
 4. Run `npm run schema:extract`. Review the schema diff and any extractor changes.
 5. Run the code checks, `npm run schema:check`, and `npm run test:codex`.
@@ -80,6 +89,46 @@ To update Codex:
 
 The weekly latest-version test reports compatibility changes. It does not change
 the source pin or automatically approve a new schema.
+
+## Update dependencies
+
+Use the package managers to select releases and write the lock files. Check
+registry versions before accepting an update:
+
+```sh
+npm outdated
+npm install --save-exact ajv@latest ajv-formats@latest semver@latest yaml@latest
+npm install --save-dev --save-exact @types/node@latest @types/semver@latest eslint@latest eslint-plugin-jsdoc@latest oxlint@latest oxlint-tsgolint@latest prettier@latest tsx@latest typescript-compiler@npm:typescript@latest
+npm update
+npm ci
+npm ls --all
+npm run check
+```
+
+Update `@openai/codex` with its source pin and schemas using the procedure above.
+Dependabot handles npm, Cargo, and GitHub Actions updates. Review each update's
+checks before merging it.
+
+`typescript-compiler` is an [npm alias](https://docs.npmjs.com/cli/install/) for
+the latest TypeScript compiler. `typecheck` invokes that compiler directly.
+The documentation plugin currently needs a TypeScript peer below 6.1, so npm
+installs its supported peer separately. This keeps the project compiler current
+without forcing an unsupported peer version. `.npmrc` requires valid peers and
+the declared Node version on installation.
+
+For Rust, use `cargo add` to upgrade dependency constraints when a new major
+release is available, then `cargo update` to refresh the lock file:
+
+```sh
+export CARGO_HOME="$PWD/.cache/cargo"
+cargo update --manifest-path tools/codex-schema/Cargo.toml
+npm run schema:extract
+npm run schema:check
+```
+
+Regenerate schemas after any extractor dependency change. Provenance records
+`Cargo.toml` and `Cargo.lock`; a dependency-only PR fails until its new provenance
+is committed. Run the Rust checks below and review the generated diff as well.
 
 ## TypeScript documentation rules
 
@@ -127,7 +176,7 @@ changes to the validator or extractor, also run the Rust checks below after
 
 ```sh
 export CARGO_HOME="$PWD/.cache/cargo"
-export CODEX_SCHEMA_SOURCE_DIR="$PWD/.cache/codex/e363b08c9175ac1cbe5893615dd2cb9ddf95043b"
+export CODEX_SCHEMA_SOURCE_DIR="$PWD/.cache/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d"
 cargo fmt --check --manifest-path tools/codex-schema/Cargo.toml
 cargo clippy --locked --all-targets --manifest-path tools/codex-schema/Cargo.toml -- -D warnings
 cargo test --locked --manifest-path tools/codex-schema/Cargo.toml
@@ -156,7 +205,7 @@ The real CLI test checks a snapshot of your current marketplace against its own
 declared inventory. It also checks independent fixtures for an empty marketplace
 and a plugin with skills, both MCP transports, and multiple command hooks. These
 fixtures keep installation and component coverage active when your catalog is empty.
-The CLI must report each registered marketplace. Codex 0.146.0 can omit empty
+The CLI must report each registered marketplace. Codex 0.162.1 can omit empty
 catalogs from app-server results; populated catalogs must appear with exact plugin
 and component inventories.
 An invalid source that Codex silently omits proves that the test catches an
@@ -172,9 +221,9 @@ three jobs as required branch checks if you want GitHub to block merges on failu
 - [OpenAI: build plugins](https://developers.openai.com/plugins/build/plugins)
 - [Agent Plugins: plugin schema](https://agent-plugins.org/schemas/1.0.0/plugin.schema.json)
 - [Agent Plugins: MCP schema](https://agent-plugins.org/schemas/1.0.0/mcp.schema.json)
-- [Pinned Codex marketplace parser](https://github.com/openai/codex/blob/e363b08c9175ac1cbe5893615dd2cb9ddf95043b/codex-rs/core-plugins/src/marketplace.rs)
-- [Pinned Codex manifest parser](https://github.com/openai/codex/blob/e363b08c9175ac1cbe5893615dd2cb9ddf95043b/codex-rs/core-plugins/src/manifest.rs)
-- [Pinned Codex configuration schema](https://github.com/openai/codex/blob/e363b08c9175ac1cbe5893615dd2cb9ddf95043b/codex-rs/core/config.schema.json)
+- [Pinned Codex marketplace parser](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core-plugins/src/marketplace.rs)
+- [Pinned Codex manifest parser](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core-plugins/src/manifest.rs)
+- [Pinned Codex configuration schema](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/config.schema.json)
 
 The Codex-derived schemas retain the source notices in
 `schemas/upstream/CODEX-LICENSE` and `schemas/upstream/CODEX-NOTICE`.

@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": ">=24.15.0"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node node_modules/typescript-compiler/bin/tsc --noEmit",
     "lint": "oxlint --type-aware --deny-warnings src test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -28,14 +28,15 @@
     "yaml": "2.9.1"
   },
   "devDependencies": {
-    "@openai/codex": "0.146.0",
+    "@openai/codex": "0.162.1",
     "@types/node": "26.6.5",
     "@types/semver": "7.8.0",
-    "eslint-plugin-jsdoc": "65.2.0",
+    "eslint": "10.12.0",
+    "eslint-plugin-jsdoc": "65.3.0",
     "oxlint": "1.87.0",
     "oxlint-tsgolint": "7.0.2004",
     "prettier": "3.9.10",
     "tsx": "4.23.15",
-    "typescript": "7.0.2"
+    "typescript-compiler": "npm:typescript@7.0.2"
   }
 }

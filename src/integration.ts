@@ -370,7 +370,7 @@ async function checkMarketplace(
       (candidate) => candidate.name === name,
     );
     if (match === undefined) {
-      // Codex 0.146.0 omits empty catalogs from app-server plugin/list.
+      // Codex omits empty catalogs from app-server plugin/list.
       // CLI registration is checked above; populated catalogs must still appear here.
       assert.equal(
         expected.length,
@@ -498,7 +498,7 @@ async function componentFixture(root: string): Promise<void> {
       },
     ],
   });
-  await writeJson(path.join(plugin, 'plugin.json'), {
+  await writeJson(path.join(plugin, 'plugin.config.json'), {
     $schema: pluginSchema,
     name: 'components',
     version: '1.2.3',

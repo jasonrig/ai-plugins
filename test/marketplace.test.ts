@@ -222,7 +222,7 @@ await test('catalog paths cannot escape the repository', async (t) => {
 
 await test('each plugin needs its own manifest and matching identity', async (t) => {
   const root = await fixture(t);
-  const file = path.join(root, 'plugins/sample/plugin.json');
+  const file = path.join(root, 'plugins/sample/plugin.config.json');
   await change(file, (value) => {
     value.name = 'renamed';
   });
@@ -231,9 +231,16 @@ await test('each plugin needs its own manifest and matching identity', async (t)
   await assert.rejects(loadMarketplace(root), /ENOENT/u);
 });
 
+await test('a root plugin.json cannot override the generated Codex manifest', async (t) => {
+  const root = await fixture(t);
+  const plugin = path.join(root, 'plugins/sample');
+  await cp(path.join(plugin, 'plugin.config.json'), path.join(plugin, 'plugin.json'));
+  await assert.rejects(loadMarketplace(root), /root plugin.json overrides/u);
+});
+
 await test('portable manifests reject typos and missing release metadata', async (t) => {
   const root = await fixture(t);
-  const file = path.join(root, 'plugins/sample/plugin.json');
+  const file = path.join(root, 'plugins/sample/plugin.config.json');
   await change(file, (value) => {
     value.versoin = '1.0.0';
   });
@@ -359,7 +366,7 @@ await test('source-derived schemas exclude permissive manifest fallbacks', async
 
 await test('OpenAI extension typos, unsupported components, and missing assets fail', async (t) => {
   const root = await fixture(t);
-  const file = path.join(root, 'plugins/sample/plugin.json');
+  const file = path.join(root, 'plugins/sample/plugin.config.json');
   await change(file, (value) => {
     value.extensions = { 'com.openai': { interface: { dispalyName: 'Typo' } } };
   });
@@ -460,7 +467,7 @@ await test('MCP relative file references use the declared plugin working directo
 
 await test('hook references must exist and hook events must be valid', async (t) => {
   const root = await fixture(t);
-  const file = path.join(root, 'plugins/sample/plugin.json');
+  const file = path.join(root, 'plugins/sample/plugin.config.json');
   await change(file, (value) => {
     value.extensions = { 'com.openai': { hooks: './hooks.json' } };
   });
@@ -483,9 +490,11 @@ await test('integration comparisons reject omissions, extras, and duplicates', (
 
 await test('stale MCP output is detected and generation removes it', async (t) => {
   const root = await fixture(t);
+  const marketplace = await loadMarketplace(root);
+  await generate(marketplace, false);
   const file = path.join(root, 'plugins/sample/mcp.json');
   await writeFile(file, '{}\n');
-  const marketplace = await loadMarketplace(root);
+  await assert.rejects(generate(marketplace, true), /stale MCP output/u);
   await generate(marketplace, false);
   await assert.rejects(readFile(file), /ENOENT/u);
 });

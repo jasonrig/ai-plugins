@@ -126,7 +126,7 @@ export async function provenance(): Promise<unknown> {
     profile: {
       unknownFields: 'reject',
       untypedFallbacks: 'excluded from schema only',
-      catalogFallbackMetadata: 'excluded; use plugin.json',
+      catalogFallbackMetadata: 'excluded; use plugin.config.json',
     },
   };
 }

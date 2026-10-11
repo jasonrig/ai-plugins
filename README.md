@@ -1,81 +1,36 @@
-# Personal Codex plugin marketplace
+# Codex plugin marketplace
 
-Create, curate, and install your own Codex plugins from this repository. The
-marketplace starts empty. Keep the GitHub repository private to control who can
-access your marketplace.
+This repository holds a catalog of Codex plugins and the files that each plugin
+provides: skills, MCP server settings, command hooks, and display metadata.
+`marketplace.config.json` selects the plugins available through the marketplace.
+Each package lives in `plugins/<name>/`.
 
-This marketplace is tested with Codex **0.146.0**.
-Plugins can contain skills, MCP servers, command hooks, and display metadata.
-
-## Set up
-
-Clone this repository and open a terminal in its directory. Install Node.js 24 or
-newer, then run:
-
-```sh
-npm ci
-npm run check
-npm run test:codex
-```
-
-The checks confirm that your plugin files are valid and Codex can list and install
-them. They use a temporary Codex home and need no account login or API key. You do
-not need Rust for everyday plugin work.
-
-Tests use private fixtures, so the checks remain useful when your marketplace is
-empty or you add, rename, or remove your own plugins.
-
-## Install a plugin
-
-These commands assume that Codex is already installed and available as `codex` in
-your terminal. [Create a plugin](#create-a-plugin) before installing one. The
-examples below use `my-plugin`. Add the marketplace from GitHub:
-
-```sh
-codex plugin marketplace add https://github.com/jasonrig/ai-plugins.git
-```
-
-For a private repository, Git must already have access through your usual GitHub
-credentials.
-
-To use your local checkout instead, run this from the repository directory:
-
-```sh
-codex plugin marketplace add "$PWD"
-```
-
-List the available plugins, then install one:
-
-```sh
-codex plugin list --available --marketplace personal-plugins
-codex plugin add my-plugin@personal-plugins
-```
-
-Use the name from `marketplace.config.json` if you rename the marketplace. Replace
-`my-plugin` with the name of the plugin you want to install.
-
-To uninstall a plugin:
-
-```sh
-codex plugin remove my-plugin@personal-plugins
-```
+The repository also contains tools to create plugin packages, generate the
+manifests Codex reads, and check that the catalog matches the packages on disk.
+GitHub CI validates the files against schemas and tests discovery, installation,
+and removal with the Codex CLI. The checks use Codex **0.162.1**.
 
 ## Create a plugin
 
-Run:
+Use Node.js **24.15 or newer**. From the repository directory, run:
 
 ```sh
+npm ci
 npm run plugin:new -- my-plugin
 ```
 
-This creates a plugin with a starter skill, adds it to the catalog, and prepares
-its Codex files. Edit:
+The command creates the package, adds its catalog entry, and generates its Codex
+manifest. Edit these files:
 
-- `plugins/my-plugin/plugin.json`: set a useful description and version.
-- `plugins/my-plugin/skills/my-plugin/SKILL.md`: describe when Codex should use the
-  skill and give its instructions.
+| File                                          | What to put in it                                     |
+| --------------------------------------------- | ----------------------------------------------------- |
+| `plugins/my-plugin/plugin.config.json`        | Plugin description, version, and optional metadata    |
+| `plugins/my-plugin/skills/my-plugin/SKILL.md` | When to use the skill and the steps Codex must follow |
+| `marketplace.config.json`                     | Category and authentication policy                    |
 
-Each skill starts with this form:
+Replace the starter skill instructions with the task you want Codex to perform.
+For another skill in the same plugin, add `skills/<skill-name>/SKILL.md`. Each
+skill starts with a name and description:
 
 ```markdown
 ---
@@ -86,18 +41,14 @@ description: Use when the user asks for the specific task this skill handles.
 Write the task instructions here.
 ```
 
-Make the instructions specific enough for Codex to follow. Replace the starter
-text before you publish the plugin. For another skill in the same plugin, add
-`skills/<skill-name>/SKILL.md`.
-
 Use lowercase letters, numbers, and single hyphens for names, up to 64 characters.
-The plugin name must match its directory and catalog entry. Each skill name must
+The plugin name must match its directory and catalog entry. The skill name must
 match its own directory. Use a version such as `0.1.0`, and increase it when you
 release a change.
 
 ## Check and publish changes
 
-After you add, edit, or remove a plugin, run:
+After you change a package or the catalog, run:
 
 ```sh
 npm run generate
@@ -106,47 +57,64 @@ npm run check
 npm run test:codex
 ```
 
-Review and commit both the files you edited and the generated files. Push your
-changes to GitHub to run CI. CI checks your work; it does not fix files for you.
+Review and commit the authored files and generated files, then push to GitHub.
+`generate` updates `.agents/plugins/marketplace.json`, each package's
+`.codex-plugin/plugin.json`, and the MCP files when needed. Run the command to
+update these outputs whenever their inputs change.
 
-The Codex test checks installation and component discovery. Test each skill's
-behavior, MCP server connection, and hook command separately before you rely on it.
+`check` validates schemas, package names, versions, component paths, and the
+catalog inventory. It also checks TypeScript, documentation, formatting, unit
+tests, and generated files. A package that is missing from the catalog fails the
+check. A catalog entry whose package is missing also fails.
 
-## Curate the marketplace
+`test:codex` checks the repository through the real CLI in a temporary Codex home.
+It also uses separate test packages to check skills, MCP settings, and hooks.
+These tests need no account login or API key. Test each skill's behavior, MCP
+connection, and hook command separately before you rely on it.
 
-Edit `marketplace.config.json` to set the marketplace name and display name, or to
-change a plugin's category and authentication policy. The plugin creation command
-adds catalog entries for you.
+## Curate the catalog
 
-Every directory under `plugins/` must have exactly one catalog entry. Every entry
-must point to an existing plugin. Keep work in progress outside `plugins/`, such
-as in `drafts/`, until you are ready to include it.
+Edit `marketplace.config.json` to change the marketplace identity, plugin category,
+or policy. Every directory under `plugins/` must have exactly one catalog entry.
+Keep unfinished packages outside that directory until you want to include them.
 
-To remove a plugin from the marketplace, delete its directory and catalog entry,
-then run the checks above. To remove only your installed copy, use the uninstall
-command instead.
+To remove a plugin from the marketplace, delete its package directory and catalog
+entry, then regenerate and check the files. To rename a plugin, update its
+directory, `plugin.config.json`, and catalog entry together.
 
-An empty marketplace is valid. Set `plugins` to `[]` in the catalog after removing
-the last plugin. The `plugins/` directory can be absent; the creation command makes
-it when you add your first plugin.
+## Use the marketplace in Codex
 
-## Files you edit
+These commands assume that Codex is installed and available as `codex`. Register
+the GitHub repository:
 
-| File                                     | Purpose                                                          |
-| ---------------------------------------- | ---------------------------------------------------------------- |
-| `marketplace.config.json`                | Marketplace identity and list of published plugins               |
-| `plugins/<name>/plugin.json`             | Plugin name, version, description, and optional display metadata |
-| `plugins/<name>/skills/<skill>/SKILL.md` | Skill description and instructions                               |
-| `plugins/<name>/mcp.config.json`         | Optional MCP server settings                                     |
-| A hook file referenced by `plugin.json`  | Optional command hooks                                           |
+```sh
+codex plugin marketplace add https://github.com/jasonrig/ai-plugins.git
+```
 
-`npm run generate` prepares `.agents/plugins/marketplace.json`, each plugin's
-`.codex-plugin/plugin.json`, and its `mcp.json` when needed. Update these files by
-running the command whenever you change their inputs.
+Git must have access to the repository. For local development, register your
+checkout instead:
 
-## Add MCP servers or hooks
+```sh
+codex plugin marketplace add "$PWD"
+```
 
-For an MCP server, add `plugins/<name>/mcp.config.json`. For example:
+List the available plugins and install one by its catalog name:
+
+```sh
+codex plugin list --available --marketplace personal-plugins
+codex plugin add my-plugin@personal-plugins
+```
+
+Replace `my-plugin` with the plugin you want. If you rename the marketplace, use
+its new name instead of `personal-plugins`. To remove an installed copy, run:
+
+```sh
+codex plugin remove my-plugin@personal-plugins
+```
+
+## Add MCP servers and hooks
+
+Add MCP server definitions to `plugins/<name>/mcp.config.json`. For example:
 
 ```json
 {
@@ -161,39 +129,26 @@ For an MCP server, add `plugins/<name>/mcp.config.json`. For example:
 }
 ```
 
-Include `servers/example.mjs` in the plugin. Commands run from the plugin root
-unless you set `cwd`. Remote servers can use `streamable-http` with a URL and
-optional headers. Use relative paths for package files and process environment
-variables for secrets. Variable substitutions in settings and legacy SSE are not
-supported.
+Include `servers/example.mjs` in the package. Commands run from the plugin root
+unless you set `cwd`. Remote servers use `streamable-http` with a URL and optional
+headers. Read secrets from the process environment. Variable substitutions in
+settings and legacy SSE are not supported.
 
-For a command hook, set `extensions.com.openai.hooks` in `plugin.json` to a relative
-hook file path, such as `./hooks.json`, or supply an inline hook object. You can also
-set `extensions.com.openai.interface` for display metadata. Include any referenced
-icons, logos, or screenshots in the plugin.
+For command hooks, set `extensions.com.openai.hooks` in `plugin.config.json` to a relative
+hook file path, such as `./hooks.json`, or an inline hook object. Set
+`extensions.com.openai.interface` for display metadata. Include any icons, logos,
+or screenshots that it references.
 
 See [OpenAI's plugin guide](https://developers.openai.com/plugins/build/plugins)
-for component examples. This project supports the components listed above;
-external plugin sources, apps, and custom skill directories are not yet supported.
+for component examples. This repository supports local packages with the
+components above. Apps, external package sources, and custom skill directories
+are not supported.
 
-## Fix a failed check
+## Maintain the validation tools
 
-| Message or problem                             | What to do                                                                                     |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Generated file is missing or stale             | Run `npm run generate` and commit its output.                                                  |
-| Formatting check fails                         | Run `npm run format`.                                                                          |
-| Unlisted plugin directory                      | Add its catalog entry, or move unfinished work outside `plugins/`.                             |
-| Missing package, skill, or asset               | Restore the file or correct its path.                                                          |
-| Plugin or skill name does not match            | Use the same name in its declaration and directory.                                            |
-| Schema validation fails                        | Check the named field for spelling, type, or unsupported settings.                             |
-| Missing JSDoc comment or description           | Add a purpose description and document function parameters and results.                        |
-| Codex reports different plugins or components  | Check the catalog and referenced files, then rerun generation and the Codex test.              |
-| Schema provenance or source regeneration fails | Follow the [maintenance guide](docs/maintenance.md) before changing the source pin or schemas. |
+GitHub CI runs schema and inventory checks, regenerates schemas from pinned Codex
+source, and runs CLI integration tests on each push and pull request. A weekly
+test also checks the latest Codex release.
 
-GitHub CI runs code checks, schema regeneration, and real Codex integration on each
-push and pull request. Set these three jobs as required branch checks if you want
-to block merges when a check fails. A separate weekly check tests the latest Codex
-release.
-
-For schema extraction, source pins, Codex upgrades, and validator development, see
-[Marketplace maintenance](docs/maintenance.md).
+See [Marketplace maintenance](docs/maintenance.md) for dependency updates, schema
+extraction, Codex upgrades, and changes to the validator.

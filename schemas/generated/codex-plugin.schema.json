@@ -17,6 +17,9 @@
       ],
       "default": null
     },
+    "extensions": {
+      "default": null
+    },
     "hooks": {
       "anyOf": [
         {
@@ -85,6 +88,13 @@
     "HookEventsToml": {
       "type": "object",
       "properties": {
+        "Interrupt": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
         "PermissionRequest": {
           "type": "array",
           "default": [],
@@ -222,6 +232,48 @@
         {
           "type": "object",
           "properties": {
+            "input": {
+              "type": "object",
+              "additionalProperties": true,
+              "default": {}
+            },
+            "server": {
+              "type": "string"
+            },
+            "statusMessage": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "timeout": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "default": null,
+              "minimum": 0
+            },
+            "tool": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "const": "mcp_tool"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "server",
+            "tool"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "type": {
               "type": "string",
               "const": "prompt"
@@ -259,6 +311,7 @@
         "hooks": {
           "$ref": "#/$defs/HookEventsToml",
           "default": {
+            "Interrupt": [],
             "PermissionRequest": [],
             "PostCompact": [],
             "PostToolUse": [],

@@ -29,7 +29,7 @@ async function createPlugin(root: string, name: string): Promise<void> {
   }
   const skill = path.join(directory, 'skills', name);
   await mkdir(skill, { recursive: true });
-  await writeJson(path.join(directory, 'plugin.json'), {
+  await writeJson(path.join(directory, 'plugin.config.json'), {
     $schema: pluginSchema,
     name,
     version: '0.1.0',
@@ -47,7 +47,9 @@ async function createPlugin(root: string, name: string): Promise<void> {
   });
   await writeJson(path.join(root, 'marketplace.config.json'), marketplace.catalog);
   await generate(await loadMarketplace(root), false);
-  console.log(`Created ${relative}. Edit plugin.json and skills/${name}/SKILL.md.`);
+  console.log(
+    `Created ${relative}. Edit plugin.config.json and skills/${name}/SKILL.md.`,
+  );
 }
 
 /**

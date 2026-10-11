@@ -20,7 +20,7 @@ import type {
   Skill,
 } from './types.js';
 
-/** Portable plugin schema URI required in authored `plugin.json` files. */
+/** Portable plugin schema URI required in authored `plugin.config.json` files. */
 export const pluginSchema =
   'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json';
 /** Portable MCP schema URI required in authored `mcp.config.json` files. */
@@ -329,14 +329,19 @@ export async function loadMarketplace(root: string): Promise<Marketplace> {
   for (const entry of catalog.plugins) {
     const pluginRoot = await containedPath(root, entry.path);
     const files = await filesBelow(pluginRoot);
+    if (files.includes(path.join(pluginRoot, 'plugin.json'))) {
+      throw new Error(
+        `${entry.name}: root plugin.json overrides the Codex manifest; use plugin.config.json`,
+      );
+    }
     const manifest = await schemas.check<PluginManifest>(
       'upstream/plugin.schema.json',
-      await readJson(path.join(pluginRoot, 'plugin.json')),
+      await readJson(path.join(pluginRoot, 'plugin.config.json')),
       entry.name,
     );
     if (manifest.name !== entry.name) {
       throw new Error(
-        `${entry.name}: plugin.json name must match the catalog and directory`,
+        `${entry.name}: plugin.config.json name must match the catalog and directory`,
       );
     }
     text(manifest.version, `${entry.name}: version`);
