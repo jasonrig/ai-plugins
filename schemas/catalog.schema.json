@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "interface", "plugins"],
+  "properties": {
+    "name": { "$ref": "#/$defs/name" },
+    "interface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["displayName"],
+      "properties": { "displayName": { "type": "string", "minLength": 1 } }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "path", "category", "authentication"],
+        "properties": {
+          "name": { "$ref": "#/$defs/name" },
+          "path": { "type": "string", "pattern": "^plugins/[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "category": { "type": "string", "minLength": 1 },
+          "authentication": { "enum": ["ON_USE", "ON_INSTALL"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "name": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    }
+  }
+}

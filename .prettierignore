@@ -1,0 +1,9 @@
+package-lock.json
+tools/codex-schema/Cargo.lock
+schemas/generated/
+schemas/upstream/
+.cache/
+test-results/
+.agents/plugins/marketplace.json
+plugins/*/.codex-plugin/plugin.json
+plugins/*/mcp.json

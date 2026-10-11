@@ -1,0 +1,41 @@
+{
+  "name": "personal-plugin-marketplace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --type-aware --deny-warnings src test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "schema:extract": "node --import tsx src/cli.ts schema extract",
+    "schema:check": "node --import tsx src/cli.ts schema check",
+    "generate": "node --import tsx src/cli.ts generate",
+    "generate:check": "node --import tsx src/cli.ts generate --check",
+    "validate": "node --import tsx src/cli.ts validate",
+    "plugin:new": "node --import tsx src/cli.ts new",
+    "test": "node --import tsx --test test/*.test.ts",
+    "test:codex": "node --import tsx src/integration.ts",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run validate && npm run generate:check"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "semver": "7.8.5",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@openai/codex": "0.146.0",
+    "@types/node": "26.6.5",
+    "@types/semver": "7.8.0",
+    "eslint-plugin-jsdoc": "61.7.1",
+    "oxlint": "1.87.0",
+    "oxlint-tsgolint": "7.0.2004",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  }
+}

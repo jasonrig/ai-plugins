@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "sample",
+  "version": "1.0.0",
+  "description": "Private fixture for marketplace validation tests.",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Sample test plugin",
+        "shortDescription": "Exercise plugin metadata validation.",
+        "category": "Testing"
+      }
+    }
+  }
+}

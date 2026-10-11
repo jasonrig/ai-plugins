@@ -1,0 +1,61 @@
+name: Validate marketplace
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketplace-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Schema, inventory, and code checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
+  schema-source:
+    name: Regenerate schemas from pinned Codex source
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RUSTUP_TOOLCHAIN: 1.95.0
+      CARGO_HOME: ${{ github.workspace }}/.cache/cargo
+      CODEX_SCHEMA_SOURCE_DIR: ${{ github.workspace }}/.cache/codex/e363b08c9175ac1cbe5893615dd2cb9ddf95043b
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+      - run: npm run schema:check
+      - run: cargo fmt --check --manifest-path tools/codex-schema/Cargo.toml
+      - run: cargo clippy --locked --all-targets --manifest-path tools/codex-schema/Cargo.toml -- -D warnings
+      - run: cargo test --locked --manifest-path tools/codex-schema/Cargo.toml
+
+  codex:
+    name: Codex CLI integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:codex

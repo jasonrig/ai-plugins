@@ -1,0 +1,12 @@
+{
+  "name": "test-plugins",
+  "interface": { "displayName": "Unit test plugins" },
+  "plugins": [
+    {
+      "name": "sample",
+      "path": "plugins/sample",
+      "category": "Testing",
+      "authentication": "ON_USE"
+    }
+  ]
+}

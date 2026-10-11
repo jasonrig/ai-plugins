@@ -1,0 +1,7 @@
+.idea/
+node_modules/
+.cache/
+tools/codex-schema/target/
+dist/
+test-results/
+.DS_Store

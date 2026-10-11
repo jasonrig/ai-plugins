@@ -1,0 +1,480 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RawPluginManifest",
+  "type": "object",
+  "properties": {
+    "apps": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "hooks": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RawPluginManifestHooks"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "interface": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RawPluginManifestInterface"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "keywords": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "string"
+      }
+    },
+    "mcpServers": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RawPluginManifestMcpServers"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "name": {
+      "type": "string",
+      "default": ""
+    },
+    "skills": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RawPluginManifestPaths"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "HookEventsToml": {
+      "type": "object",
+      "properties": {
+        "PermissionRequest": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "PostCompact": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "PostToolUse": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "PreCompact": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "PreToolUse": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "SessionEnd": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "SessionStart": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "Stop": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "SubagentStart": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "SubagentStop": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "UserPromptSubmit": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "HookHandlerConfig": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "additionalContextLimit": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint",
+              "minimum": 0
+            },
+            "async": {
+              "type": "boolean",
+              "default": false
+            },
+            "command": {
+              "type": "string"
+            },
+            "commandWindows": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "statusMessage": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "timeout": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "default": null,
+              "minimum": 0
+            },
+            "type": {
+              "type": "string",
+              "const": "command"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "command"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "prompt"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "agent"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ]
+        }
+      ]
+    },
+    "HooksFile": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hooks": {
+          "$ref": "#/$defs/HookEventsToml",
+          "default": {
+            "PermissionRequest": [],
+            "PostCompact": [],
+            "PostToolUse": [],
+            "PreCompact": [],
+            "PreToolUse": [],
+            "SessionEnd": [],
+            "SessionStart": [],
+            "Stop": [],
+            "SubagentStart": [],
+            "SubagentStop": [],
+            "UserPromptSubmit": []
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MatcherGroup": {
+      "type": "object",
+      "properties": {
+        "hooks": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/HookHandlerConfig"
+          }
+        },
+        "matcher": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    },
+    "RawPluginManifestDefaultPrompt": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RawPluginManifestDefaultPromptEntry"
+          }
+        }
+      ]
+    },
+    "RawPluginManifestDefaultPromptEntry": {
+      "anyOf": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "RawPluginManifestHooks": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "$ref": "#/$defs/HooksFile"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HooksFile"
+          }
+        }
+      ]
+    },
+    "RawPluginManifestInterface": {
+      "type": "object",
+      "properties": {
+        "brandColor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "capabilities": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "composerIcon": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "defaultPrompt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawPluginManifestDefaultPrompt"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "developerName": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "displayName": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "logo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "logoDark": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "longDescription": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "privacyPolicyUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "screenshots": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "shortDescription": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "termsOfServiceUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "websiteUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    },
+    "RawPluginManifestMcpServers": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "RawPluginManifestPaths": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "repository": "https://github.com/openai/codex",
+  "version": "0.146.0",
+  "revision": "e363b08c9175ac1cbe5893615dd2cb9ddf95043b",
+  "files": [
+    {
+      "path": "codex-rs/core-plugins/src/marketplace.rs",
+      "filename": "marketplace.rs",
+      "sha256": "eba7fed810eed705a2ff6bf73af2b7a879cabaca7807f5df36a73a01b6ff9795"
+    },
+    {
+      "path": "codex-rs/core-plugins/src/manifest.rs",
+      "filename": "manifest.rs",
+      "sha256": "f4295d27b5b12766d0c79c2c360a132fe83086ccbe21787cc4f90343c3e8733c"
+    },
+    {
+      "path": "codex-rs/protocol/src/protocol.rs",
+      "filename": "protocol.rs",
+      "sha256": "ee77ca873f8c60af31ed93fdeef368ce9229ea940edfedbe9db9c3fe35e1488e"
+    },
+    {
+      "path": "codex-rs/config/src/hook_config.rs",
+      "filename": "hook_config.rs",
+      "sha256": "6aa43c68bc3260682a4feebae13ffff8381759dda2bc2177bde756c19f149ffc"
+    }
+  ]
+}

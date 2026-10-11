@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # Update Codex together with the source lock and regenerated schemas.
+      - dependency-name: '@openai/codex'
+  - package-ecosystem: cargo
+    directory: /tools/codex-schema
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

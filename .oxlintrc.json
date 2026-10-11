@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "unicorn", "oxc"],
+  "jsPlugins": [{ "name": "jsdoc-js", "specifier": "eslint-plugin-jsdoc" }],
+  "settings": {
+    "jsdoc": {
+      "mode": "typescript",
+      "tagNamePreference": { "template": "typeParam" }
+    }
+  },
+  "categories": { "correctness": "error", "suspicious": "error" },
+  "rules": {
+    "jsdoc-js/require-jsdoc": [
+      "error",
+      {
+        "contexts": [
+          "TSInterfaceDeclaration",
+          "TSTypeAliasDeclaration",
+          "Program > VariableDeclaration",
+          "ExportNamedDeclaration[declaration.type=VariableDeclaration]",
+          "ExportDefaultDeclaration:not([declaration.type=FunctionDeclaration]):not([declaration.type=ClassDeclaration])",
+          "MethodDefinition:not([accessibility=private]):not([accessibility=protected]):not([key.type=PrivateIdentifier])",
+          "PropertyDefinition:not([accessibility=private]):not([accessibility=protected]):not([key.type=PrivateIdentifier])"
+        ],
+        "require": {
+          "FunctionDeclaration": true,
+          "ClassDeclaration": true,
+          "ClassExpression": true
+        },
+        "enableFixer": false
+      }
+    ],
+    "jsdoc-js/require-description": [
+      "error",
+      {
+        "contexts": ["any"],
+        "descriptionStyle": "body",
+        "exemptedBy": []
+      }
+    ],
+    "jsdoc-js/require-param": ["error", { "enableFixer": false }],
+    "jsdoc-js/require-param-description": "error",
+    "jsdoc-js/check-param-names": "error",
+    "jsdoc-js/require-returns": ["error", { "enableFixer": false }],
+    "jsdoc-js/require-returns-description": "error",
+    "jsdoc-js/check-tag-names": "error",
+    "jsdoc-js/no-types": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-argument": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/no-unsafe-call": "error",
+    "eslint/eqeqeq": "error",
+    "eslint/curly": "error"
+  }
+}

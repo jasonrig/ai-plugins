@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RawMarketplaceManifest",
+  "type": "object",
+  "properties": {
+    "interface": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RawMarketplaceManifestInterface"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "name": {
+      "type": "string"
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RawMarketplaceManifestPlugin"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "plugins"
+  ],
+  "$defs": {
+    "MarketplacePluginAuthPolicy": {
+      "type": "string",
+      "enum": [
+        "ON_INSTALL",
+        "ON_USE"
+      ]
+    },
+    "MarketplacePluginInstallPolicy": {
+      "type": "string",
+      "enum": [
+        "NOT_AVAILABLE",
+        "AVAILABLE",
+        "INSTALLED_BY_DEFAULT"
+      ]
+    },
+    "Product": {
+      "type": "string",
+      "enum": [
+        "chatgpt",
+        "codex",
+        "atlas"
+      ]
+    },
+    "RawMarketplaceManifestInterface": {
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    },
+    "RawMarketplaceManifestPlugin": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "name": {
+          "type": "string"
+        },
+        "policy": {
+          "$ref": "#/$defs/RawMarketplaceManifestPluginPolicy",
+          "default": {
+            "authentication": "ON_INSTALL",
+            "installation": "AVAILABLE",
+            "products": null
+          }
+        },
+        "source": {
+          "$ref": "#/$defs/RawMarketplaceManifestPluginSource"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "source"
+      ]
+    },
+    "RawMarketplaceManifestPluginPolicy": {
+      "type": "object",
+      "properties": {
+        "authentication": {
+          "$ref": "#/$defs/MarketplacePluginAuthPolicy",
+          "default": "ON_INSTALL"
+        },
+        "installation": {
+          "$ref": "#/$defs/MarketplacePluginInstallPolicy",
+          "default": "AVAILABLE"
+        },
+        "products": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/Product"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "RawMarketplaceManifestPluginSource": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/RawMarketplaceManifestPluginSourceObject"
+        }
+      ]
+    },
+    "RawMarketplaceManifestPluginSourceObject": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string",
+              "const": "local"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "path"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sha": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "const": "url"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "url"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sha": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "const": "git-subdir"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "url",
+            "path"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "package": {
+              "type": "string"
+            },
+            "registry": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "const": "npm"
+            },
+            "version": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "package"
+          ]
+        }
+      ]
+    }
+  }
+}

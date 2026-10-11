@@ -1,0 +1,5 @@
+{
+  "name": "personal-plugins",
+  "interface": { "displayName": "Personal plugins" },
+  "plugins": []
+}

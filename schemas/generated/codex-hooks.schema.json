@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HooksFile",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hooks": {
+      "$ref": "#/$defs/HookEventsToml",
+      "default": {
+        "PermissionRequest": [],
+        "PostCompact": [],
+        "PostToolUse": [],
+        "PreCompact": [],
+        "PreToolUse": [],
+        "SessionEnd": [],
+        "SessionStart": [],
+        "Stop": [],
+        "SubagentStart": [],
+        "SubagentStop": [],
+        "UserPromptSubmit": []
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "HookEventsToml": {
+      "type": "object",
+      "properties": {
+        "PermissionRequest": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "PostCompact": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "PostToolUse": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "PreCompact": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "PreToolUse": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "SessionEnd": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "SessionStart": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "Stop": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "SubagentStart": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "SubagentStop": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        },
+        "UserPromptSubmit": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/MatcherGroup"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "HookHandlerConfig": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "additionalContextLimit": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint",
+              "minimum": 0
+            },
+            "async": {
+              "type": "boolean",
+              "default": false
+            },
+            "command": {
+              "type": "string"
+            },
+            "commandWindows": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "statusMessage": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "timeout": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "default": null,
+              "minimum": 0
+            },
+            "type": {
+              "type": "string",
+              "const": "command"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "command"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "prompt"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "agent"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ]
+        }
+      ]
+    },
+    "MatcherGroup": {
+      "type": "object",
+      "properties": {
+        "hooks": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/HookHandlerConfig"
+          }
+        },
+        "matcher": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
