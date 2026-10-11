@@ -31,7 +31,7 @@
     "@openai/codex": "0.146.0",
     "@types/node": "26.6.5",
     "@types/semver": "7.8.0",
-    "eslint-plugin-jsdoc": "61.7.1",
+    "eslint-plugin-jsdoc": "65.2.0",
     "oxlint": "1.87.0",
     "oxlint-tsgolint": "7.0.2004",
     "prettier": "3.9.10",
