@@ -1,0 +1,5 @@
+interface:
+  display_name: 'Focused IntelliJ Editing'
+  short_description: 'Make small, focused edits with IntelliJ IDE context.'
+policy:
+  allow_implicit_invocation: true

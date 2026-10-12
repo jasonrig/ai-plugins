@@ -125,9 +125,12 @@ codex plugin remove my-plugin@personal-plugins
 
 ## IntelliJ plugin
 
-The `intellij` plugin provides a skill to register IntelliJ IDEA's MCP server in
-the current project's `.codex/config.toml`. Install **IntelliJ** from **Personal
-plugins** in the Codex App's Plugins Directory.
+The `intellij` plugin connects JetBrains IDE MCP to Codex projects, helps compose
+IDE-assisted development workflows, and supports focused code editing with the
+developer. Install **IntelliJ** from **Personal plugins** in the Codex App's
+Plugins Directory.
+
+### Connect the IDE
 
 After installation, open a chat in the project you want to connect and ask:
 "Use the IntelliJ plugin to register its MCP server for this project." The skill
@@ -144,6 +147,49 @@ does not edit user-level Codex settings.
 
 For the actual port, server setup, or connection problems, see
 [JetBrains' MCP Server documentation](https://www.jetbrains.com/help/idea/mcp-server.html).
+
+### Use IDE-assisted workflows
+
+After connecting the IDE, ask: "Use $use-intellij-mcp to trace this failure,
+reproduce it with the project's test configuration, and validate a fix." The
+skill combines available IDE tools for code understanding, impact analysis,
+refactoring, inspections, execution, runtime debugging, and data investigation.
+It follows the project's languages and installed IDE capabilities and can also
+activate whenever IntelliJ MCP use is relevant. It supports ordinary autonomous
+work without requiring the focused-editing style below.
+
+Before using IDE tools, the skill checks that the connection addresses the same
+checkout as the chat and corroborates its scope with a harmless live call.
+Equivalent paths and verified subdirectories are accepted; unrelated projects
+and sibling worktrees are refused. If the connection is unavailable, mismatched,
+or unverified, dependent work pauses until connection repair or an explicit choice
+to use local tools. These are agent instructions, not permissions enforced by
+the MCP server.
+
+See the [MCP workflow skill](plugins/intellij/skills/use-intellij-mcp/SKILL.md)
+for the project checks, workflow menu, and tool-selection references.
+
+### Work through focused edits
+
+After connecting the IDE, ask: "Use $focus-intellij-code to simplify
+`calculateTotal` in the active file. Let's work through one change at a time."
+You can also name a file, block, or line range in the conversation. Codex uses
+the active file as context and asks a short targeting question when the intended
+region is unclear. The skill does not automatically retrieve the caret or
+selected text.
+
+The skill makes one coherent change, explains necessary supporting edits such
+as imports or references, validates the result, and leaves the next increment
+for you to steer. It discusses substantial expansion before editing and avoids
+incidental cleanup. Switching tabs changes the focus when the conversation
+clearly points to the new target; continuing the same topic retains the agreed
+focus.
+
+The skill can also activate when the conversation clearly establishes this
+working style. A single small task does not trigger it. The preference stays in
+the current chat, and you can change the scope or collaboration rhythm at any
+time. See the [focused editing skill](plugins/intellij/skills/focus-intellij-code/SKILL.md)
+for its workflow.
 
 ### Keep local connection settings out of commits
 

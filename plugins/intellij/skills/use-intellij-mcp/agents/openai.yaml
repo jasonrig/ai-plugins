@@ -1,0 +1,5 @@
+interface:
+  display_name: 'IntelliJ MCP Workflows'
+  short_description: 'Compose IDE workflows in the verified project.'
+policy:
+  allow_implicit_invocation: true

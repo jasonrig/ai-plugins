@@ -1,7 +1,7 @@
 {
   "name": "intellij",
-  "version": "0.1.0",
-  "description": "Register IntelliJ IDEA's MCP server for individual Codex projects.",
+  "version": "0.2.0",
+  "description": "Connect JetBrains IDE MCP to Codex, compose development workflows in the verified project, and collaborate on focused code edits.",
   "keywords": [
     "intellij",
     "jetbrains",
@@ -10,6 +10,6 @@
   "skills": "./skills",
   "interface": {
     "displayName": "IntelliJ",
-    "shortDescription": "Set up IntelliJ MCP for the current Codex project."
+    "shortDescription": "Connect IDE MCP, compose workflows, and focus code edits."
   }
 }

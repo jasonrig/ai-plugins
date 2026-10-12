@@ -106,10 +106,13 @@ connectivity.
 Have the user restart the Codex App after saving, then open a new chat in the
 same local project. Use the App's **Settings > MCP servers** to inspect available
 server status and any reported errors. Confirm that IntelliJ tools are available
-in the project chat and verify the connection with a read-only tool call,
-supplying the target `projectPath` when the tool accepts it. Report whether the
-saved registration and live connection were each verified. Do not require the
-user to run terminal commands to complete this App workflow.
+in the project chat. Before a live call, follow the
+[project verification workflow](../use-intellij-mcp/SKILL.md#verify-the-project-before-ide-operations),
+including checkout matching and a harmless scoped corroboration of the connection.
+A saved registration does not prove that the App loaded it or that its IDE target
+matches the current checkout. Report whether the saved registration and live
+connection scope were each verified. Do not require the user to run terminal
+commands to complete this App workflow.
 
 For a different port, a refused connection, an unavailable server, or another
 connection issue, refer the user to
