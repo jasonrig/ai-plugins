@@ -33,7 +33,7 @@
     "@types/node": "26.6.5",
     "@types/semver": "7.8.0",
     "eslint": "10.12.0",
-    "eslint-plugin-jsdoc": "65.3.0",
+    "eslint-plugin-jsdoc": "65.3.6",
     "oxlint": "1.87.0",
     "oxlint-tsgolint": "7.0.2004",
     "prettier": "3.9.10",
